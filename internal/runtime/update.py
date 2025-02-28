@@ -19,6 +19,7 @@ import colorama
 from colorama import Fore, Back, Style
 
 ## Variables
+Token = ""
 
 ## Functions
 
@@ -82,6 +83,15 @@ def IsConnectedToInternet() -> bool:
     else:
         return True
 
+def GetToken():
+    global Token
+    return Token
+
+def SetToken(NewToken: str) -> str:
+    global Token
+    Token = NewToken
+
+    return Token
 
 def Update(TargetDirectory: str, Branch: str = "main"):
     Url = f"{DownloadURL}/{Branch}"

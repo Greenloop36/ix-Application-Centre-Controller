@@ -14,17 +14,18 @@ os.chdir("C:/")
 
 
 ## Configuration
-ProgramTitle = "Cryptographer"
-ThisVersion = "2.1c"
+ProgramTitle = "ApplicationCentreController"
+ThisVersion = "0.0"
 
 ## Imports
 import colorama
 from colorama import Fore, Back, Style
 import json
 import traceback
+import ctypes
 
 from internal.libraries.utils import UserInput
-
+import internal.runtime.gui as Application
 import internal.runtime.update as update
 
 ## Variables
@@ -35,6 +36,11 @@ DataFile = f"{Dir}\\internal\\persistent\\Data.json"
 ## Functions
     
 # Out
+def toggle_console(visible):
+    console_window = ctypes.windll.kernel32.GetConsoleWindow()
+    if console_window:
+        ctypes.windll.user32.ShowWindow(console_window, 1 if visible else 0)
+
 def Error(Message: str):
     print(Style.BRIGHT + Fore.RED + "error" + Style.RESET_ALL + ": " + str(Message))
 
@@ -117,24 +123,24 @@ def Quit(Message: str | None = None):
 def FirstSetup():
     try:
         Data = {
-            "Update Token": None
+            "Commit Token": None
         }
 
         ClearWindow()
         print("Performing first time setup...")
         
         while True:
-            UpdateToken = input(GetInputPrefix("Setup", "Please enter the Update Authorisation Token, or Control+C to skip."))
+            Token = input(GetInputPrefix("Setup", "Please enter the Commit Access Token, or Control+C to skip."))
             # UpdateToken = input("\nPlease enter the Update Authorisation Token\nControl+C to skip\n> ")
             print("Validating...")
 
-            update.SetUpdateToken(UpdateToken)
+            update.SetToken(Token)
             Ver = update.GetLatestVersionCode()
 
             if Ver == None:
                 print("Either the wrong token has been entered, or there is a problem with your internet connection.")
             else:
-                Data["Update Token"] = UpdateToken
+                Data["Update Token"] = Token
                 print("Access is granted!")
                 Pause()
                 break
@@ -142,6 +148,9 @@ def FirstSetup():
         Data_Set(Data)
         ClearWindow()
     except KeyboardInterrupt:
+        Warning("You will only have READ access, as a token has not been given.")
+        Pause()
+
         pass
     except Exception as e:
         ExceptionWithTraceback(e)
@@ -149,106 +158,105 @@ def FirstSetup():
 
 
 ## Internal Commands
-class Container_Commands:
-    def encrypt(_, Query: str = ""):
-        if Query in ("", None):
-            try:
-                Query = input(GetInputPrefix("encrypt", "Please enter a query to encrypt"))
-            except KeyboardInterrupt:
-                return
+# class Container_Commands:
+#     def encrypt(_, Query: str = ""):
+#         if Query in ("", None):
+#             try:
+#                 Query = input(GetInputPrefix("encrypt", "Please enter a query to encrypt"))
+#             except KeyboardInterrupt:
+#                 return
         
-        try:
-            Result = crypt.Encode(Query)
-        except Exception as e:
-            Error(f"Failed to encode the query \"{Query}\"! ({str(e)})")
-        else:
-            clipboard.copy(Result)
+#         try:
+#             Result = crypt.Encode(Query)
+#         except Exception as e:
+#             Error(f"Failed to encode the query \"{Query}\"! ({str(e)})")
+#         else:
+#             clipboard.copy(Result)
 
-            print("=========== RESULT ===========")
-            print(Result)
-            print("==============================")
+#             print("=========== RESULT ===========")
+#             print(Result)
+#             print("==============================")
     
-    def decrypt(_, Query: str = ""):
-        if Query in ("", None):
-            try:
-                Query = input(GetInputPrefix("decrypt", "Please enter a query to encrypt:"))
-            except KeyboardInterrupt:
-                return
+#     def decrypt(_, Query: str = ""):
+#         if Query in ("", None):
+#             try:
+#                 Query = input(GetInputPrefix("decrypt", "Please enter a query to encrypt:"))
+#             except KeyboardInterrupt:
+#                 return
         
-        try:
-            Result = crypt.Decode(Query)
-        except Exception as e:
-            Error(f"Failed to decode the query \"{Query}\"!\nHave you properly copied/pasted the message? ({str(e)})")
-        else:
-            clipboard.copy(Result)
+#         try:
+#             Result = crypt.Decode(Query)
+#         except Exception as e:
+#             Error(f"Failed to decode the query \"{Query}\"!\nHave you properly copied/pasted the message? ({str(e)})")
+#         else:
+#             clipboard.copy(Result)
             
-            print("=========== RESULT ===========")
-            print(Result)
-            print("==============================")
+#             print("=========== RESULT ===========")
+#             print(Result)
+#             print("==============================")
     
-    def auto(*_):
-        Notice("Entering automatic mode. Paste in text and it will be automatically encrypted or decrypted. Press Control+C to exit this mode.")
-        while True:
-            try:
-                Query = input(GetInputPrefix("auto", "Enter a query for automatic encryption/decryption"))
-            except KeyboardInterrupt:
-                print()
-                return
+#     def auto(*_):
+#         Notice("Entering automatic mode. Paste in text and it will be automatically encrypted or decrypted. Press Control+C to exit this mode.")
+#         while True:
+#             try:
+#                 Query = input(GetInputPrefix("auto", "Enter a query for automatic encryption/decryption"))
+#             except KeyboardInterrupt:
+#                 print()
+#                 return
             
-            if Query == "" or Query.startswith(" "):
-                continue
+#             if Query == "" or Query.startswith(" "):
+#                 continue
 
-            try:
-                Enc = crypt.Encode(Query)
-            except Exception as e:
-                Enc = None
+#             try:
+#                 Enc = crypt.Encode(Query)
+#             except Exception as e:
+#                 Enc = None
             
-            try:
-                Dec = crypt.Decode(Query)
-            except Exception as e:
-                Dec = None
+#             try:
+#                 Dec = crypt.Decode(Query)
+#             except Exception as e:
+#                 Dec = None
 
-            if Enc == None and Dec == None:
-                Error("Malformed input. Nothing was encoded or decoded.")
-            elif Enc != None and Dec == None: # Only encryption returned a result
-                print(f"{Fore.CYAN}Encryption{Fore.RESET}\n{Enc}\n")
-                clipboard.copy(Enc)
-            else: # Decryption returned a result
-                print(f"{Fore.BLUE}Decryption{Fore.RESET}\n{Dec}\n")
-                clipboard.copy(Dec)
+#             if Enc == None and Dec == None:
+#                 Error("Malformed input. Nothing was encoded or decoded.")
+#             elif Enc != None and Dec == None: # Only encryption returned a result
+#                 print(f"{Fore.CYAN}Encryption{Fore.RESET}\n{Enc}\n")
+#                 clipboard.copy(Enc)
+#             else: # Decryption returned a result
+#                 print(f"{Fore.BLUE}Decryption{Fore.RESET}\n{Dec}\n")
+#                 clipboard.copy(Dec)
     
-    def init(*_):
-        Warning("This will reset your update token. Only do this if a new update token is available.")
-        if UserInput.YesNo("Do you wish to continue?"):
-            FirstSetup()
+#     def init(*_):
+#         Warning("This will reset your update token. Only do this if a new update token is available.")
+#         if UserInput.YesNo("Do you wish to continue?"):
+#             FirstSetup()
     
-    def prepareforpush(*_):
-        Warning("This is a developer-only command, and will reset most settings.")
-        if UserInput.YesNo("Do you wish to continue?"):
-            Data_Set({})
+#     def prepareforpush(*_):
+#         Warning("This is a developer-only command, and will reset most settings.")
+#         if UserInput.YesNo("Do you wish to continue?"):
+#             Data_Set({})
     
 
-    def update(*_):
-        print("Preparing to update...")
-        Latest = update.GetLatestVersionCode()
+#     def update(*_):
+#         print("Preparing to update...")
+#         Latest = update.GetLatestVersionCode()
 
-        if Latest == None:
-            return Error("Could not get latest version. Check your update token.")
-        elif Latest == ThisVersion:
-            Warning(f"You are already using the latest version available, {Fore.LIGHTGREEN_EX}{ThisVersion}{Fore.RESET}.")
+#         if Latest == None:
+#             return Error("Could not get latest version. Check your update token.")
+#         elif Latest == ThisVersion:
+#             Warning(f"You are already using the latest version available, {Fore.LIGHTGREEN_EX}{ThisVersion}{Fore.RESET}.")
 
-            if not UserInput.YesNo("Do you want to update anyway?"):
-                return
-        else:
-            print(f"You are about to upgrade to the latest version, {Fore.LIGHTGREEN_EX}{ThisVersion}{Fore.RESET}.")
-            if not UserInput.YesNo("Do you want to continue?"):
-                return
+#             if not UserInput.YesNo("Do you want to update anyway?"):
+#                 return
+#         else:
+#             print(f"You are about to upgrade to the latest version, {Fore.LIGHTGREEN_EX}{ThisVersion}{Fore.RESET}.")
+#             if not UserInput.YesNo("Do you want to continue?"):
+#                 return
 
-        ClearWindow()
-        update.Update(Dir)
+#         ClearWindow()
+#         update.Update(Dir)
 
 ## Runtime
-Commands = Container_Commands()
 
 def main():
 
@@ -264,33 +272,24 @@ def main():
     print("checking for updates...")
 
     try:
-        UpdateToken = Data["Update Token"]
+        UpdateToken = Data["Commit Token"]
     except:
         UpdateToken = None
 
-    update.SetUpdateToken(UpdateToken)
+    update.SetToken(UpdateToken)
     
     LatestVer = update.GetLatestVersionCode()
 
     ## Check data
     Data = Data_Read()
-    if ( ## Ensure that the update token is valid, else prompt to first setup
-        Data == None 
-        or 
-        (
-            "Update Token" in Data
-            and
-            (Data["Update Token"] == "" or Data["Update Token"] == None)
-            )
-        or
-        LatestVer == None
-    ):
+    
+    if Data.get("Commit Token", None) == None:
         FirstSetup()
         
 
     ## Greeting
     ClearWindow()
-    print(f"Cryptographer [Version {ThisVersion}]")
+    print(f"{ProgramTitle} [Version {ThisVersion}]")
     print(f"Control+C to exit\n")
 
     ## Ensure that file version code & current version code (stored in Configuration) are the same
@@ -306,10 +305,11 @@ def main():
     
     ## Check for updates & refresh the version code (if unauthorised, it will be blank)
     LatestVer = update.GetLatestVersionCode()
+    ShouldUpdate = False
 
     if ThisVersion != LatestVer and LatestVer != None:
-        Notice(f"An update is available! Run \"{Fore.BLUE}update{Fore.RESET}\" to download the latest version. ({Fore.LIGHTRED_EX}{ThisVersion}{Fore.RESET} -> {Fore.GREEN}{LatestVer}{Fore.RESET})")
-    
+        ShouldUpdate = True
+        
     # if Data.get("Update Token", None) == None:
     #     Warning(f"Missing update token! Run the \"{Fore.BLUE}init{Fore.RESET}\" command or restart the program to enter one.")
 
@@ -318,35 +318,27 @@ def main():
 
     ## Set the updater's update token
     Data = Data_Read() or {}
-    update.SetUpdateToken(Data.get("Update Token", None))
+    update.SetToken(Data.get("Commit Token", None))
 
-    ## Command line loop
-    while True:
-        try:
-            Query = input(GetInputPrefix())
-        except KeyboardInterrupt:
-            Quit()
-        else:
-            print()
-            Valid, Command, Params = ParseInput(Query)
+    ## Main loop
+    if ShouldUpdate:
+        print(f"Update available: You can to upgrade to the latest version, {Fore.LIGHTGREEN_EX}{ThisVersion}{Fore.RESET}.")
+        if UserInput.YesNo("Do you want to continue?"):
+            update.Update()
+    
+    try:
+        toggle_console(False)
+        Application.main()
+    except Exception as e:
+        toggle_console(True)
 
-            if not Valid or Command == "":
-                continue
-
-            ## Get the method
-            Method = getattr(Commands, Command, None)
-
-            if callable(Method):
-                try:
-                    Method(Params)
-                except Exception as e:
-                    CustomException(f"\nAn exception ocurred whilst running the command \"{Command}\"!")
-                    ExceptionWithTraceback(e)
-            else:
-                CustomException(f"\"{Command}\" is not recognised as an internal command.")
+        CustomException(f"\nA fatal error ocurred during runtime! The program will now exit. See details below.\n\n")
+        ExceptionWithTraceback(e)
+        Pause()
+    
 
 if __name__ == "__main__":
-    CatchErrors = True ## Debug flag
+    CatchErrors = False ## Debug flag
 
     if CatchErrors:
         try:
