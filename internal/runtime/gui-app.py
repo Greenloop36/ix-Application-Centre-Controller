@@ -73,16 +73,19 @@ def CreateObjectsForDict(Dictionary: dict, Container, Indent: int = 0, SaveTo: d
         ttk.Label(Container, text=Index, anchor="w").grid(row=CurrentRow, column=1, sticky="nwse", padx=(Indent, DefaultPadding), pady=(0, DefaultPadding))
 
         if Type == "str":
-            Variable = StringVar(Root)
-            Object = ttk.Entry(Container, textvariable=Variable)
-            Root.update()
-            Variable.set(Value)
+            Object = ttk.Entry(Container)
+            Object.delete(0, END)
+            Object.insert(0, Value)
+
         elif Type == "bool":
-            Variable = BooleanVar(Root)
-            Object = ttk.Checkbutton(Container, variable=Variable)
-            Root.update()
-            Variable.set(Value)
-            print()
+            Object = ttk.Checkbutton(Container)
+            Object.state(['!alternate'])
+
+            if Value == True:
+                Object.state(["selected"])
+            else:
+                Object.state(["!selected"])
+
         elif Type == "dict":
             SaveTo[Index] = {}
             CreateObjectsForDict(Value, Container, DefaultPadding + Indent, SaveTo[Index])
