@@ -79,9 +79,6 @@ def CustomRequest(URL, Method: str, Data, DefaultHeaders: dict = None) -> tuple[
     if DefaultHeaders == None:
         DefaultHeaders = {"Accept": "application/vnd.github.v3.raw"}
     
-    pprint.pp(DefaultHeaders)
-    pprint.pp(Data)
-    
     try:
         JSONData = json.dumps(Data)
     except:
@@ -91,7 +88,7 @@ def CustomRequest(URL, Method: str, Data, DefaultHeaders: dict = None) -> tuple[
 
     try:
         Response = requests.request(url=URL, method=Method, data=Data, headers=DefaultHeaders)
-        print(f"\n{Response.text}")
+        # print(f"\n{Response.text}")
     except ConnectionError as e:
         return False, f"Connection failed. Please check your internet connection. ({e})"
     except TimeoutError as e:
