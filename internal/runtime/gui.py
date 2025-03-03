@@ -112,7 +112,7 @@ def GetStatus() -> tuple[bool, dict | str]:
             Ratelimit_used = int(Result.headers["x-ratelimit-used"])
             Ratelimit_refresh = int(Result.headers["x-ratelimit-reset"])
 
-            if 50 >= Ratelimit_remaining:
+            if 20 >= Ratelimit_remaining:
                 messagebox.showwarning(ProgramTitle, f"WARNING: A ratelimit will be imposed shortly in {Ratelimit_remaining} more requests.\nThis will expire in {unix_to_relative(Ratelimit_refresh)}.")
             
             return True, Data
