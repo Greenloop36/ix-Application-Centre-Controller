@@ -238,6 +238,16 @@ def main():
     try:
         toggle_console(False)
         Application.main(Data_Read(), DataFile)
+        ExitCode = Application.GetExitCommand()
+        
+        if ExitCode:
+            toggle_console(True)
+
+            if ExitCode == "update":
+                if UserInput.YesNo(f"Are you sure you want to install the latest version, {Fore.LIGHTGREEN_EX}{ThisVersion}{Fore.RESET}?"):
+                    update.Update()
+
+
     except Exception as e:
         toggle_console(True)
 

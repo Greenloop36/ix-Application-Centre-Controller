@@ -22,6 +22,7 @@ DownloadFilePath = "https://raw.githubusercontent.com/Greenloop36/ix-Application
 Root = None
 
 ## Variables
+ExitCommand = None
 UserData = {}
 Token = None
 DataFile = ""
@@ -274,6 +275,14 @@ def InitData():
     else:
         return messagebox.showinfo(ProgramTitle, "User data was reset.\nRestart the program to perform first-time setup again.")
 
+def ExitWithCommand(Root: Tk, Command: str):
+    global ExitCommand
+    ExitCommand = Command
+
+    Root.destroy()
+
+def GetExitCommand():
+    return ExitCommand
 
 def main(Data, DataFilePath):
     global ContentFrame, Root, Token, UserData, DataFile
@@ -290,7 +299,13 @@ def main(Data, DataFilePath):
     # Menubar
     Menubar = Menu(Root)
     Root["menu"] = Menubar
+    Menu_File = Menu(Menubar)
     Menu_Edit = Menu(Menubar)
+
+    Menubar.add_cascade(menu=Menu_File, label="File")
+    Menu_File.add_command(label="Repair/update installation", command=lambda: ExitWithCommand(Root, "update"))
+    Menu_File.add_separator()
+    Menu_File.add_command(label="Exit", command=Root.destroy)
 
     Menubar.add_cascade(menu=Menu_Edit, label="Edit")
     Menu_Edit.add_command(label="Initialise user data", command=InitData)
