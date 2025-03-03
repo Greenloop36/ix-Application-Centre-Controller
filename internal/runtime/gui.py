@@ -79,8 +79,15 @@ def GetStatus() -> tuple[bool, dict | str]:
         return False, str(Result)
 
 def SetStatus(Data: dict) -> tuple[bool, str | None]:
+    HEADERS = {
+        'Accept': 'application/vnd.github+json',
+        'Authorization': f'{TokenVariable.get()}',
+        'X-GitHub-Api-Version': '2022-11-28',
+        'Content-Type': 'application/x-www-form-urlencoded',
+    }
+
     ## Convert dict to JSON (str)
-    try:
+    try:    
         Data: str = json.dumps(Data)
     except Exception as e:
         print(f"[SetStatus]: dumps failed: {e}")
@@ -97,6 +104,10 @@ def SetStatus(Data: dict) -> tuple[bool, str | None]:
     print(Token)
     return update.CustomRequest(f"{API}/Status.json", "PUT", {
         "message": "Update centre from remote control",
+        "committer": {
+            "name": "gl36",
+            "email": "ewanakira@gmail.com"
+        },
         "content": Data
     }, {"Authorisation": Token})
 
