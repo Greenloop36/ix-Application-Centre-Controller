@@ -139,12 +139,12 @@ def SetStatus(Data: dict) -> tuple[bool, str | None]:
     ResponseData = response.json()
 
     sha = ResponseData['sha']
-    CurrentStatusData = ResponseData["content"]
+    CurrentStatusData: str = ResponseData["content"]
 
-    try:
-        CurrentStatusData = base64.b64decode(CurrentStatusData).decode()
-    except:
-        CurrentStatusData = None
+    # try:
+    #     CurrentStatusData = base64.b64decode(CurrentStatusData).decode()
+    # except:
+    #     CurrentStatusData = None
 
     ## Convert dict to JSON (str)
     try:    
@@ -158,14 +158,17 @@ def SetStatus(Data: dict) -> tuple[bool, str | None]:
         Data = base64.b64encode(Data.encode("utf-8")).decode()
     except Exception as e:
         print(f"[SetStatus]: b64encode failed: {e}")
-        return False, "Could not encode to Base64!"
 
-    if CurrentStatusData == Data:
+        return False, "Could not encode to Base64!"
+    print(CurrentStatusData)
+    print(Data)
+    if CurrentStatusData.replace("\n", "") == Data:
+        
         return False, "No changes to commit."
     
     ## Prepare data
     BODY = {
-        "message": f"{UserData["Username"]} submitted data.",
+        "message": f"{UserData['Username']} submitted data.",
         "committer": {
             "name": UserData["Username"],
             "email": UserData["Email"]
@@ -175,7 +178,6 @@ def SetStatus(Data: dict) -> tuple[bool, str | None]:
     }
 
     ## Commit
-    print(Token)
     return update.CustomRequest(f"{API}/Status.json", "PUT", BODY, HEADERS)
 
 def ClearFrame(ContentFrame):
@@ -251,7 +253,7 @@ def RefreshWindow(Override: bool = False) -> bool:
 def OnSubmit():
     Target = TkObjectsToDict(CurrentData)
     Success, Result = SetStatus(Target)
-    RefreshWindow(True)
+    # RefreshWindow(True)
 
     if Success:
         return messagebox.showinfo(ProgramTitle, "Successfully updated centre status.")
