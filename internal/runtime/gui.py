@@ -79,8 +79,15 @@ def GetStatus() -> tuple[bool, dict | str]:
         return False, str(Result)
 
 def SetStatus(Data: dict) -> tuple[bool, str | None]:
+    HEADERS = {
+        'Accept': 'application/vnd.github+json',
+        'Authorization': f'{TokenVariable.get()}',
+        'X-GitHub-Api-Version': '2022-11-28',
+        'Content-Type': 'application/x-www-form-urlencoded',
+    }
+
     ## Convert dict to JSON (str)
-    try:
+    try:    
         Data: str = json.dumps(Data)
     except Exception as e:
         print(f"[SetStatus]: dumps failed: {e}")
@@ -94,10 +101,14 @@ def SetStatus(Data: dict) -> tuple[bool, str | None]:
         return False, "Could not encode to Base64!"
     
     ## Commit
-    return update.ProtectedPost(f"{API}/Status.json", {
+    return update.ProtectedCustomRequest(f"{API}Status.json?ref=main", {
         "message": "Update centre from remote control",
+        "committer": {
+            "name": "gl36",
+            "email": "ewanakira@gmail.com"
+        },
         "content": Data
-    }, {"Authorisation": TokenVariable.get()})
+    }, HEADERS, "PUT")
 
 def ClearFrame(ContentFrame):
     for widget in ContentFrame.winfo_children():

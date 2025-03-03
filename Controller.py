@@ -140,7 +140,7 @@ def FirstSetup():
             if Ver == None:
                 print("Either the wrong token has been entered, or there is a problem with your internet connection.")
             else:
-                Data["Update Token"] = Token
+                Data["Commit Token"] = Token
                 print("Access is granted!")
                 Pause()
                 break
@@ -227,7 +227,7 @@ def FirstSetup():
 #                 clipboard.copy(Dec)
     
 #     def init(*_):
-#         Warning("This will reset your update token. Only do this if a new update token is available.")
+#         Warning("This will reset your Commit Token. Only do this if a new Commit Token is available.")
 #         if UserInput.YesNo("Do you wish to continue?"):
 #             FirstSetup()
     
@@ -242,7 +242,7 @@ def FirstSetup():
 #         Latest = update.GetLatestVersionCode()
 
 #         if Latest == None:
-#             return Error("Could not get latest version. Check your update token.")
+#             return Error("Could not get latest version. Check your Commit Token.")
 #         elif Latest == ThisVersion:
 #             Warning(f"You are already using the latest version available, {Fore.LIGHTGREEN_EX}{ThisVersion}{Fore.RESET}.")
 
@@ -310,13 +310,13 @@ def main():
     if ThisVersion != LatestVer and LatestVer != None:
         ShouldUpdate = True
         
-    # if Data.get("Update Token", None) == None:
-    #     Warning(f"Missing update token! Run the \"{Fore.BLUE}init{Fore.RESET}\" command or restart the program to enter one.")
+    # if Data.get("Commit Token", None) == None:
+    #     Warning(f"Missing Commit Token! Run the \"{Fore.BLUE}init{Fore.RESET}\" command or restart the program to enter one.")
 
     if LatestVer == None:
-        Warning("Failed to get latest update! Please check your internet connection or update token.")
+        Warning("Failed to get latest update! Please check your internet connection or Commit Token.")
 
-    ## Set the updater's update token
+    ## Set the updater's Commit Token
     Data = Data_Read() or {}
     update.SetToken(Data.get("Commit Token", None))
 
@@ -338,7 +338,7 @@ def main():
     
 
 if __name__ == "__main__":
-    CatchErrors = False ## Debug flag
+    CatchErrors = True ## Debug flag
 
     if CatchErrors:
         try:

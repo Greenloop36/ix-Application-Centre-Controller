@@ -72,6 +72,35 @@ def ProtectedPost(URL, Data, DefaultHeaders: dict = None) -> tuple[bool, any]:
         else:
             return False, f"HTTP {Response.status_code} ({Response.reason})"
 
+def ProtectedCustomRequest(URL, Data, DefaultHeaders: dict = None, Method: str = "POST") -> tuple[bool, any]:
+    if DefaultHeaders == None:
+        DefaultHeaders = {"Accept": "application/vnd.github.v3.raw"}
+    
+    try:
+        JSONData = json.dumps(Data)
+    except:
+        pass
+    else:
+        Data = JSONData
+
+    try:
+        Response = requests.request(url=URL, data=Data, headers=DefaultHeaders, method=Method)
+        print(Response.text)
+    except ConnectionError as e:
+        return False, f"Connection failed. Please check your internet connection. ({e})"
+    except TimeoutError as e:
+        return False, f"Request timed out. ({e})"
+    except requests.exceptions.InvalidSchema as e:
+        return False, f"Bad Request. Check the access token.\n{e}"
+    except requests.exceptions.RequestException as e:
+        return False, f"Unknown error: \"{e}\". Check your internet connection."
+    else:
+        Success = Response.status_code >= 200 and Response.status_code < 300
+        if Success:
+            return True, Response
+        else:
+            return False, f"HTTP {Response.status_code} ({Response.reason})"
+
 def IsConnectedToInternet() -> bool:
     try:
         response = requests.get("https://8.8.8.8/")
