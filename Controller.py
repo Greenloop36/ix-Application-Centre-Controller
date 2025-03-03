@@ -15,7 +15,7 @@ os.chdir("C:/")
 
 ## Configuration
 ProgramTitle = "ApplicationCentreController"
-ThisVersion = "0.0"
+ThisVersion = "1.0"
 
 ## Imports
 import colorama
