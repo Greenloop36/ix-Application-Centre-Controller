@@ -233,7 +233,7 @@ def main():
     if ShouldUpdate:
         print(f"Update available: You can to upgrade to the latest version, {Fore.LIGHTGREEN_EX}{ThisVersion}{Fore.RESET}.")
         if UserInput.YesNo("Do you want to continue?"):
-            update.Update()
+            update.Update(Dir)
     
     try:
         toggle_console(False)
@@ -245,7 +245,7 @@ def main():
 
             if ExitCode == "update":
                 if UserInput.YesNo(f"Are you sure you want to install the latest version, {Fore.LIGHTGREEN_EX}{ThisVersion}{Fore.RESET}?"):
-                    update.Update()
+                    update.Update(Dir)
 
 
     except Exception as e:
