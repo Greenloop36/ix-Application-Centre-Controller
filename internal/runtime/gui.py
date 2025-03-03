@@ -2,7 +2,11 @@ from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
 from tkinter import font
+from datetime import datetime
+
 from . import update
+
+import os
 import requests
 import json
 import base64
@@ -20,6 +24,7 @@ Root = None
 ## Variables
 UserData = {}
 Token = None
+DataFile = ""
 RefreshDebounce = 0
 CurrentRow = 0
 CurrentData = {}
@@ -53,6 +58,26 @@ HeaderFont = None
 
 #     Window.mainloop()
 
+def unix_to_relative(unix_timestamp: int) -> str:
+    # Get the current time as a Unix timestamp
+    current_time = datetime.now().timestamp()
+
+    # Calculate the difference in seconds
+    difference = current_time - unix_timestamp
+
+    # Convert the difference into a human-readable format
+    if difference < 60:  # Less than a minute
+        return f"{int(difference)} seconds ago"
+    elif difference < 3600:  # Less than an hour
+        minutes = int(difference // 60)
+        return f"{minutes} minute{'s' if minutes != 1 else ''} ago"
+    elif difference < 86400:  # Less than a day
+        hours = int(difference // 3600)
+        return f"{hours} hour{'s' if hours != 1 else ''} ago"
+    else:  # More than a day
+        days = int(difference // 86400)
+        return f"{days} day{'s' if days != 1 else ''} ago"
+
 def TkObjectsToDict(Target: dict) -> dict:
     Result = {}
 
@@ -83,6 +108,13 @@ def GetStatus() -> tuple[bool, dict | str]:
         except Exception as e:
             return False, "Failed to decode base64 contents!"
         else:
+            Ratelimit_remaining = int(Result.headers["x-ratelimit-remaining"])
+            Ratelimit_used = int(Result.headers["x-ratelimit-used"])
+            Ratelimit_refresh = int(Result.headers["x-ratelimit-reset"])
+
+            if 50 >= Ratelimit_remaining:
+                messagebox.showwarning(ProgramTitle, f"WARNING: A ratelimit will be imposed shortly in {Ratelimit_remaining} more requests.\nThis will expire in {unix_to_relative(Ratelimit_refresh)}.")
+            
             return True, Data
     else:
         return False, f"GET failed: HTTP {Result.status_code} ({Result.reason})"
@@ -226,9 +258,25 @@ def OnSubmit():
     else:
         return messagebox.showerror(ProgramTitle, f"Failed to commit: {Result}")
 
-def main(Data):
-    global ContentFrame, Root, Token, UserData
+def InitData():
+    if not os.path.exists(DataFile):
+        return messagebox.showerror(ProgramTitle, "error: Data file does not exist. Try reinstalling the app.")
+
+    try:
+        if not messagebox.askyesno(ProgramTitle, "Are you sure you want to reset your user data?"): return
+
+        with open(DataFile, "w") as File:
+            File.write("{}")
+    except Exception as e:
+        return messagebox.showerror(ProgramTitle, f"error: Failed to write to file ({e})")
+    else:
+        return messagebox.showinfo(ProgramTitle, "User data was reset.\nRestart the program to perform first-time setup again.")
+
+
+def main(Data, DataFilePath):
+    global ContentFrame, Root, Token, UserData, DataFile
     UserData = Data
+    DataFile = DataFilePath
 
     ## UI
     Root = Tk()
@@ -237,13 +285,13 @@ def main(Data):
     Token = update.GetToken()
     Root.option_add('*tearOff', FALSE)
 
-    ## Menubar
-    # Menubar = Menu(Root)
-    # Root["menu"] = Menubar
-    # Menu_Edit = Menu(Menubar)
+    # Menubar
+    Menubar = Menu(Root)
+    Root["menu"] = Menubar
+    Menu_Edit = Menu(Menubar)
 
-    # Menubar.add_cascade(menu=Menu_Edit, label="Edit")
-    # Menu_Edit.add_command(label="Edit Token", command=TokenWindow)
+    Menubar.add_cascade(menu=Menu_Edit, label="Edit")
+    Menu_Edit.add_command(label="Initialise user data", command=InitData)
 
 
     # Header

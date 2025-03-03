@@ -69,6 +69,10 @@ def ClearWindow():
 ## Data
 def Data_Set(NewData: dict) -> bool:
     try:
+        if not os.path.exists(DataFile):
+            with open(DataFile, "x") as File:
+                File.write("")
+            
         with open(DataFile, "w") as File:
             File.write(json.dumps(NewData))
     except:
@@ -79,7 +83,7 @@ def Data_Set(NewData: dict) -> bool:
 def Data_Read() -> dict | None:
     try:
         with open(DataFile, "r") as File:
-            return json.loads(File.read())
+            return json.loads(File.read()) or {}
     except Exception as e:
         # Warning(f"Failed to read data: {e}")
         # Pause()
@@ -144,7 +148,11 @@ def FirstSetup():
             Data["Username"] = Username
             break
         
-        Data_Set(Data)
+        Success = Data_Set(Data)
+        if not Success:
+            Warning("Failed to save data")
+            Pause()
+
         ClearWindow()
     except KeyboardInterrupt:
         Warning("You will only have READ access, as a token has not been given.")
@@ -280,7 +288,7 @@ def main():
     LatestVer = update.GetLatestVersionCode()
 
     ## Check data
-    Data = Data_Read()
+    Data = Data_Read() or {}
     
     if Data.get("Commit Token", None) == None:
         FirstSetup()
@@ -327,7 +335,7 @@ def main():
     
     try:
         toggle_console(False)
-        Application.main(Data_Read())
+        Application.main(Data_Read(), DataFile)
     except Exception as e:
         toggle_console(True)
 
