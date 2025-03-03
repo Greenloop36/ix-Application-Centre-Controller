@@ -10,14 +10,14 @@ import time
 ## Configuration
 DefaultPadding = 10
 ProgramTitle = "Application Centre Controller"
-API = "https://api.github.com/repos/Greenloop36/ix-ApplicationCentre_Status/contents/"
+API = "https://api.github.com/repos/Greenloop36/ix-ApplicationCentre_Status/contents"
 DownloadFilePath = "https://raw.githubusercontent.com/Greenloop36/ix-ApplicationCentre_Status/main/"
 
 ## init
 Root = None
 
 ## Variables
-TokenVariable = None
+Token = None
 RefreshDebounce = 0
 CurrentRow = 0
 CurrentData = {}
@@ -25,31 +25,31 @@ ContentFrame = None
 HeaderFont = None
 
 ## Methods
-def TokenWindow():
-    Window = Toplevel()
-    HeaderFont = font.Font(size = 16, weight = "bold")
+# def TokenWindow():
+#     Window = Toplevel()
+#     HeaderFont = font.Font(size = 16, weight = "bold")
 
-    Header = ttk.Frame(Window)
-    Header.grid(sticky="w")
+#     Header = ttk.Frame(Window)
+#     Header.grid(sticky="w")
     
-    ttk.Label(Header, font=HeaderFont)
-    ttk.Label(Header, text="Commit Access Token", font=HeaderFont, anchor = "w").grid(column=0, row=0, sticky="w", padx=(DefaultPadding, 30),pady=(DefaultPadding, 0))
+#     ttk.Label(Header, font=HeaderFont)
+#     ttk.Label(Header, text="Commit Access Token", font=HeaderFont, anchor = "w").grid(column=0, row=0, sticky="w", padx=(DefaultPadding, 30),pady=(DefaultPadding, 0))
 
 
-    EntryFrame = ttk.Frame(Window)
-    EntryFrame.grid(sticky="w")
+#     EntryFrame = ttk.Frame(Window)
+#     EntryFrame.grid(sticky="w")
 
-    TokenEntry = ttk.Entry(EntryFrame, show="*", textvariable=TokenVariable, width=75)
-    TokenEntry.grid(sticky="nwse", padx=(DefaultPadding, DefaultPadding),pady=(DefaultPadding, 0))
+#     TokenEntry = ttk.Entry(EntryFrame, show="*", textvariable=TokenVariable, width=75)
+#     TokenEntry.grid(sticky="nwse", padx=(DefaultPadding, DefaultPadding),pady=(DefaultPadding, 0))
 
 
-    ButtonsFrame = ttk.Frame(Window)
-    ButtonsFrame.grid(sticky="e")
+#     ButtonsFrame = ttk.Frame(Window)
+#     ButtonsFrame.grid(sticky="e")
 
-    CloseButton = ttk.Button(ButtonsFrame, text="Close", command=Window.destroy)
-    CloseButton.grid(sticky="e", padx=(DefaultPadding, DefaultPadding),pady=(DefaultPadding, DefaultPadding))
+#     CloseButton = ttk.Button(ButtonsFrame, text="Close", command=Window.destroy)
+#     CloseButton.grid(sticky="e", padx=(DefaultPadding, DefaultPadding),pady=(DefaultPadding, DefaultPadding))
 
-    Window.mainloop()
+#     Window.mainloop()
 
 def TkObjectsToDict(Target: dict) -> dict:
     Result = {}
@@ -94,10 +94,11 @@ def SetStatus(Data: dict) -> tuple[bool, str | None]:
         return False, "Could not encode to Base64!"
     
     ## Commit
-    return update.ProtectedPost(f"{API}/Status.json", {
+    print(Token)
+    return update.CustomRequest(f"{API}/Status.json", "PUT", {
         "message": "Update centre from remote control",
         "content": Data
-    }, {"Authorisation": TokenVariable.get()})
+    }, {"Authorisation": Token})
 
 def ClearFrame(ContentFrame):
     for widget in ContentFrame.winfo_children():
@@ -180,14 +181,14 @@ def OnSubmit():
         return messagebox.showerror(ProgramTitle, f"Failed to commit: {Result}")
 
 def main():
-    global ContentFrame, Root, TokenVariable
+    global ContentFrame, Root, Token
     ## Get status
 
     ## UI
     Root = Tk()
     Root.title(ProgramTitle)
     Root.resizable(False, False)
-    TokenVariable = StringVar()
+    Token = update.GetToken()
     Root.option_add('*tearOff', FALSE)
 
     ## Menubar

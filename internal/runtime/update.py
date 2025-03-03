@@ -16,6 +16,7 @@ import sys
 import shutil
 import json
 import colorama
+import pprint
 from colorama import Fore, Back, Style
 
 ## Variables
@@ -57,6 +58,36 @@ def ProtectedPost(URL, Data, DefaultHeaders: dict = None) -> tuple[bool, any]:
 
     try:
         Response = requests.post(URL, Data, headers=DefaultHeaders)
+    except ConnectionError as e:
+        return False, f"Connection failed. Please check your internet connection. ({e})"
+    except TimeoutError as e:
+        return False, f"Request timed out. ({e})"
+    except requests.exceptions.InvalidSchema as e:
+        return False, f"Bad Request. Check the access token.\n{e}"
+    except requests.exceptions.RequestException as e:
+        return False, f"Unknown error: \"{e}\". Check your internet connection."
+    else:
+        Success = Response.status_code >= 200 and Response.status_code < 300
+        if Success:
+            return True, Response
+        else:
+            return False, f"HTTP {Response.status_code} ({Response.reason})"
+
+def CustomRequest(URL, Method: str, Data, DefaultHeaders: dict = None) -> tuple[bool, any]:
+    if DefaultHeaders == None:
+        DefaultHeaders = {"Accept": "application/vnd.github.v3.raw"}
+    
+    try:
+        JSONData = json.dumps(Data)
+    except:
+        pass
+    else:
+        Data = JSONData
+
+    try:
+        print(f"{Method}@ {URL}")
+        print(pprint.pp(DefaultHeaders))
+        Response = requests.request(url=URL, method=Method, data=Data, headers=DefaultHeaders)
     except ConnectionError as e:
         return False, f"Connection failed. Please check your internet connection. ({e})"
     except TimeoutError as e:
