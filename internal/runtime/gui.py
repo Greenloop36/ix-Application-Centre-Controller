@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkinter import messagebox
 from tkinter import font
 from . import update
+import requests
 import json
 import base64
 import time
@@ -17,6 +18,7 @@ DownloadFilePath = "https://raw.githubusercontent.com/Greenloop36/ix-Application
 Root = None
 
 ## Variables
+UserData = {}
 Token = None
 RefreshDebounce = 0
 CurrentRow = 0
@@ -66,25 +68,51 @@ def TkObjectsToDict(Target: dict) -> dict:
     return Result
 
 def GetStatus() -> tuple[bool, dict | str]:
-    Success, Result = update.ProtectedRequest(f"{DownloadFilePath}/Status.json")
+    Success, Result = update.ProtectedRequest(f"{API}Status.json")
 
     if Success:
         try:
             Data = Result.json()
-        except:
-            return False, "Could not decode JSON!"
+            # print(Data)
+            # Data = base64.b64decode(Data["content"]).decode()
+            # Data = json.loads(Data)
+        except requests.JSONDecodeError:
+            return False, "Could not decode JSON! (1)"
+        except json.decoder.JSONDecodeError:
+            return False, "Could not decode JSON! (2)"
+        except Exception as e:
+            return False, "Failed to decode base64 contents!"
         else:
             return True, Data
     else:
-        return False, str(Result)
+        return False, f"GET failed: HTTP {Result.status_code} ({Result.reason})"
 
 def SetStatus(Data: dict) -> tuple[bool, str | None]:
+    if not "Username" in UserData:
+        return False, "Authenticate with your username and email."
+
     HEADERS = {
         'Accept': 'application/vnd.github+json',
-        'Authorization': f'{TokenVariable.get()}',
+        'Authorization': f'token {Token}',
         'X-GitHub-Api-Version': '2022-11-28',
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Type': 'application/json',
     }
+
+    response = requests.get(f"{API}/Status.json", headers=HEADERS)
+
+    if response.status_code != 200:
+        print(f"[SetStatus]: fetch failed: {response.reason}")
+        return False, f"Failed to fetch file SHA: HTTP {response.status_code} ({response.reason})"
+    
+    ResponseData = response.json()
+
+    sha = ResponseData['sha']
+    CurrentStatusData = ResponseData["content"]
+
+    try:
+        CurrentStatusData = base64.b64decode(CurrentStatusData).decode()
+    except:
+        CurrentStatusData = None
 
     ## Convert dict to JSON (str)
     try:    
@@ -95,21 +123,28 @@ def SetStatus(Data: dict) -> tuple[bool, str | None]:
 
     ## Encode with base64, as github requires that format
     try:
-        Data = base64.b64encode(Data.encode("utf-8"))
+        Data = base64.b64encode(Data.encode("utf-8")).decode()
     except Exception as e:
         print(f"[SetStatus]: b64encode failed: {e}")
         return False, "Could not encode to Base64!"
+
+    if CurrentStatusData == Data:
+        return False, "No changes to commit."
     
+    ## Prepare data
+    BODY = {
+        "message": f"{UserData["Username"]} submitted data.",
+        "committer": {
+            "name": UserData["Username"],
+            "email": UserData["Email"]
+        },
+        "content": Data,
+        "sha": sha  # Include the SHA of the file
+    }
+
     ## Commit
     print(Token)
-    return update.CustomRequest(f"{API}/Status.json", "PUT", {
-        "message": "Update centre from remote control",
-        "committer": {
-            "name": "gl36",
-            "email": "ewanakira@gmail.com"
-        },
-        "content": Data
-    }, {"Authorisation": Token})
+    return update.CustomRequest(f"{API}/Status.json", "PUT", BODY, HEADERS)
 
 def ClearFrame(ContentFrame):
     for widget in ContentFrame.winfo_children():
@@ -191,9 +226,9 @@ def OnSubmit():
     else:
         return messagebox.showerror(ProgramTitle, f"Failed to commit: {Result}")
 
-def main():
-    global ContentFrame, Root, Token
-    ## Get status
+def main(Data):
+    global ContentFrame, Root, Token, UserData
+    UserData = Data
 
     ## UI
     Root = Tk()

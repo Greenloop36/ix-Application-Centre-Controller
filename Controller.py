@@ -59,7 +59,7 @@ def CustomException(Message: str):
 def ExceptionWithTraceback(e):
     Name = type(e).__name__
 
-    print(f"\n{Style.BRIGHT}{Fore.RED}{Name}: {str(e)}{Style.RESET_ALL}")
+    print(f"\n{Style.BRIGHT}{Fore.WHITE}{Back.RED} {Name} {Back.RESET}{Fore.RED}: {str(e)}{Style.RESET_ALL}")
     print(f"\n{Style.BRIGHT}{Fore.LIGHTCYAN_EX}Stack begin{Style.NORMAL}{Fore.LIGHTBLUE_EX}\n{traceback.format_exc()}{Fore.LIGHTCYAN_EX}{Style.BRIGHT}Stack end{Style.RESET_ALL}\n")
             
 
@@ -123,27 +123,26 @@ def Quit(Message: str | None = None):
 def FirstSetup():
     try:
         Data = {
-            "Commit Token": None
+            "Commit Token": None,
+            "Username": None,
+            "Email": None
         }
 
         ClearWindow()
-        print("Performing first time setup...")
+        Notice("Performing first time setup:\nControl+C to skip (Will result in read-only access)\n\n")
         
         while True:
+            Username = input(GetInputPrefix("Setup", "Enter your username. This is used in the commit message."))
+            Email = input(GetInputPrefix("Setup", "Enter your email. This is used in the commit message."))
             Token = input(GetInputPrefix("Setup", "Please enter the Commit Access Token, or Control+C to skip."))
             # UpdateToken = input("\nPlease enter the Update Authorisation Token\nControl+C to skip\n> ")
-            print("Validating...")
 
             update.SetToken(Token)
-            Ver = update.GetLatestVersionCode()
 
-            if Ver == None:
-                print("Either the wrong token has been entered, or there is a problem with your internet connection.")
-            else:
-                Data["Commit Token"] = Token
-                print("Access is granted!")
-                Pause()
-                break
+            Data["Commit Token"] = Token
+            Data["Email"] = Email
+            Data["Username"] = Username
+            break
         
         Data_Set(Data)
         ClearWindow()
@@ -328,11 +327,11 @@ def main():
     
     try:
         toggle_console(False)
-        Application.main()
+        Application.main(Data_Read())
     except Exception as e:
         toggle_console(True)
 
-        CustomException(f"\nA fatal error ocurred during runtime! The program will now exit. See details below.\n\n")
+        CustomException(f"\nA fatal error ocurred during runtime! The program will now exit. See details below.")
         ExceptionWithTraceback(e)
         Pause()
     
@@ -351,7 +350,7 @@ if __name__ == "__main__":
             if e == "" or e == None:
                 e = "Unknown exception"
 
-            CustomException(f"\nA fatal error ocurred during runtime! The program will now exit. See details below.\n\n")
+            CustomException(f"\nA fatal error ocurred during runtime! The program will now exit. See details below.")
             ExceptionWithTraceback(e)
             Pause()
     else:

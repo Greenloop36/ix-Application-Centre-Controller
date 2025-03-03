@@ -24,7 +24,7 @@ Token = ""
 
 ## Functions
 
-def ProtectedRequest(URL, DefaultHeaders: dict = None) -> tuple[bool, any]:
+def ProtectedRequest(URL, DefaultHeaders: dict = None) -> tuple[bool, str | requests.Response]:
     if DefaultHeaders == None:
         DefaultHeaders = {"Accept": "application/vnd.github.v3.raw"}
 
@@ -45,7 +45,7 @@ def ProtectedRequest(URL, DefaultHeaders: dict = None) -> tuple[bool, any]:
         else:
             return False, f"HTTP {Response.status_code} ({Response.reason})"
 
-def ProtectedPost(URL, Data, DefaultHeaders: dict = None) -> tuple[bool, any]:
+def ProtectedPost(URL, Data, DefaultHeaders: dict = None) -> tuple[bool, str | requests.Response]:
     if DefaultHeaders == None:
         DefaultHeaders = {"Accept": "application/vnd.github.v3.raw"}
     
@@ -73,21 +73,25 @@ def ProtectedPost(URL, Data, DefaultHeaders: dict = None) -> tuple[bool, any]:
         else:
             return False, f"HTTP {Response.status_code} ({Response.reason})"
 
-def CustomRequest(URL, Method: str, Data, DefaultHeaders: dict = None) -> tuple[bool, any]:
+def CustomRequest(URL, Method: str, Data, DefaultHeaders: dict = None) -> tuple[bool, str | requests.Response]:
+    print(f"\n{Method}@ {URL}")
+   
     if DefaultHeaders == None:
         DefaultHeaders = {"Accept": "application/vnd.github.v3.raw"}
+    
+    pprint.pp(DefaultHeaders)
+    pprint.pp(Data)
     
     try:
         JSONData = json.dumps(Data)
     except:
         pass
-    else:
+    else: 
         Data = JSONData
 
     try:
-        print(f"{Method}@ {URL}")
-        print(pprint.pp(DefaultHeaders))
         Response = requests.request(url=URL, method=Method, data=Data, headers=DefaultHeaders)
+        print(f"\n{Response.text}")
     except ConnectionError as e:
         return False, f"Connection failed. Please check your internet connection. ({e})"
     except TimeoutError as e:
