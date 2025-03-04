@@ -5,6 +5,7 @@ from tkinter import font
 from datetime import datetime
 
 from . import update
+from ..libraries import output as out
 
 import os
 import requests
@@ -94,7 +95,8 @@ def TkObjectsToDict(Target: dict) -> dict:
     return Result
 
 def GetStatus() -> tuple[bool, dict | str]:
-    Success, Result = update.ProtectedRequest(f"{API}Status.json")
+    URL = f"{API}Status.json"
+    Success, Result = update.ProtectedRequest(URL)
 
     if Success:
         try:
@@ -118,6 +120,7 @@ def GetStatus() -> tuple[bool, dict | str]:
             
             return True, Data
     else:
+        out.warn(f"GET to {URL}")
         return False, f"GET failed: HTTP {Result.status_code} ({Result.reason})"
 
 def SetStatus(Data: dict) -> tuple[bool, str | None]:

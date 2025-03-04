@@ -241,6 +241,7 @@ def main():
         ExitCode = Application.GetExitCommand()
         
         if ExitCode:
+            print()
             toggle_console(True)
 
             if ExitCode == "update":
