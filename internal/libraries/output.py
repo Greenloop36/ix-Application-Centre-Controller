@@ -5,33 +5,33 @@ import traceback as tb
 
 __DEMOTEXT = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam posuere."
 
-## Methods
-def error(Message: str, Prefix: str = " "):
-    if Prefix != " ":
-        Prefix = f"{Style.BRIGHT}{Back.LIGHTBLUE_EX} {Prefix} {Style.RESET_ALL} "
+__all__ = ["error", "success", "notice", "warn", "exception", "traceback", "info", "init"]
 
-    print(f"{Style.BRIGHT}{Fore.RED}error{Style.RESET_ALL}: {Prefix}{Message}")
+## Methods
+def _CreatePrefix(Prefix: str = None):
+    if Prefix != None:
+        Prefix = f" {Style.BRIGHT}{Fore.WHITE}{Back.BLUE} {Prefix} {Style.RESET_ALL} "
+    else:
+        Prefix = " "
+    return Prefix
+
+def info(Message: str, Prefix: str = None):
+    print(f"{Style.BRIGHT}{Fore.BLUE}info{Style.RESET_ALL}:{_CreatePrefix(Prefix)}{Message}")
+
+def error(Message: str, Prefix: str = None):
+    print(f"{Style.BRIGHT}{Fore.RED}error{Style.RESET_ALL}:{_CreatePrefix(Prefix)}{Message}")
     # print(Style.BRIGHT + Fore.RED + "error" + Style.RESET_ALL + ": " + str(Message))
 
-def success(Message: str, Prefix: str = " "):
-    if Prefix != " ":
-        Prefix = f"{Style.BRIGHT}{Back.LIGHTBLUE_EX} {Prefix} {Style.RESET_ALL} "
-
-    print(f"{Style.BRIGHT}{Fore.LIGHTGREEN_EX}success{Style.RESET_ALL}: {Prefix}{Message}")
+def success(Message: str, Prefix: str = None):
+    print(f"{Style.BRIGHT}{Fore.LIGHTGREEN_EX}success{Style.RESET_ALL}:{_CreatePrefix(Prefix)}{Message}")
     # print(Fore.LIGHTGREEN_EX + "success" + Fore.RESET + ": " + str(Message))
 
-def notice(Message: str, Prefix: str = " "):
-    if Prefix != " ":
-        Prefix = f"{Style.BRIGHT}{Back.LIGHTBLUE_EX} {Prefix} {Style.RESET_ALL} "
-
-    print(f"{Style.BRIGHT}{Fore.MAGENTA}notice{Style.RESET_ALL}: {Prefix}{Message}")
+def notice(Message: str, Prefix: str = None):
+    print(f"{Style.BRIGHT}{Fore.MAGENTA}notice{Style.RESET_ALL}:{_CreatePrefix(Prefix)}{Message}")
     # print(Style.BRIGHT + Fore.MAGENTA + "notice" + Style.RESET_ALL + ": " + str(Message))
 
-def warn(Message: str, Prefix: str = " "):
-    if Prefix != " ":
-        Prefix = f"{Style.BRIGHT}{Back.LIGHTBLUE_EX} {Prefix} {Style.RESET_ALL} "
-
-    print(Style.BRIGHT + Fore.YELLOW + "warning" + Fore.RESET + Style.RESET_ALL + ": " + str(Message))
+def warn(Message: str, Prefix: str = None):
+    print(f"{Style.BRIGHT}{Fore.YELLOW}warning{Style.RESET_ALL}:{_CreatePrefix(Prefix)}{Message}")
 
 def exception(Message: str):
     print(Fore.LIGHTRED_EX + str(Message) + Fore.RESET)

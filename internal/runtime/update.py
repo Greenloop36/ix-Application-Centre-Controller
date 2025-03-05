@@ -16,14 +16,13 @@ import sys
 import shutil
 import json
 import colorama
-import pprint
+from pprint import pprint
 from colorama import Fore, Back, Style
 
 ## Variables
 Token = ""
 
 ## Functions
-
 def ProtectedRequest(URL, DefaultHeaders: dict = None) -> tuple[bool, str | requests.Response]:
     if DefaultHeaders == None:
         DefaultHeaders = {"Accept": "application/vnd.github.v3.raw"}
@@ -124,6 +123,15 @@ def SetToken(NewToken: str) -> str:
     Token = NewToken
 
     return Token
+
+def CheckToken(TokenToCheck: str = Token):
+    HEADERS = {
+        "Authorization": f"token {TokenToCheck}"
+    }
+    Success, Response = CustomRequest("https://api.github.com", "HEAD", None, HEADERS)
+
+    return Success
+
 
 def Update(TargetDirectory: str, Branch: str = "main"):
     Url = f"{DownloadURL}/{Branch}"
@@ -256,6 +264,11 @@ if __name__ == "__main__":
     colorama.init(True)
     Code = GetLatestVersionCode()
     print(f"Latest version: {Code}")
+
+    try:
+        CheckToken(input("Token to check, or Control+C to skip:\n> "))
+    except KeyboardInterrupt:
+        pass
 
     while True:
         Choice = input(f"You can download a copy of {RepoName} via this utility. Do you wish to do so? (Y/n)\n> ").lower()

@@ -27,6 +27,7 @@ import ctypes
 from internal.libraries.utils import UserInput
 import internal.runtime.gui as Application
 import internal.runtime.update as update
+import internal.libraries.output as out
 
 ## Variables
 Login = os.getlogin() # notice: this just gets your local username (to be displayed in the input prefix)
@@ -41,26 +42,26 @@ def toggle_console(visible):
     if console_window:
         ctypes.windll.user32.ShowWindow(console_window, 1 if visible else 0)
 
-def Error(Message: str):
-    print(Style.BRIGHT + Fore.RED + "error" + Style.RESET_ALL + ": " + str(Message))
+# def Error(Message: str):
+#     print(Style.BRIGHT + Fore.RED + "error" + Style.RESET_ALL + ": " + str(Message))
 
-def PrintSuccess(Message: str):
-    print(Fore.LIGHTGREEN_EX + "success" + Fore.RESET + ": " + str(Message))
+# def PrintSuccess(Message: str):
+#     print(Fore.LIGHTGREEN_EX + "success" + Fore.RESET + ": " + str(Message))
 
-def Notice(Message: str):
-    print(Style.BRIGHT + Fore.MAGENTA + "notice" + Style.RESET_ALL + ": " + str(Message))
+# def Notice(Message: str):
+#     print(Style.BRIGHT + Fore.MAGENTA + "notice" + Style.RESET_ALL + ": " + str(Message))
 
-def Warning(Message: str):
-    print(Style.BRIGHT + Fore.YELLOW + "warning" + Fore.RESET + Style.RESET_ALL + ": " + str(Message))
+# def Warning(Message: str):
+#     print(Style.BRIGHT + Fore.YELLOW + "warning" + Fore.RESET + Style.RESET_ALL + ": " + str(Message))
 
-def CustomException(Message: str):
-    print(Fore.LIGHTRED_EX + str(Message) + Fore.RESET)
+# def CustomException(Message: str):
+#     print(Fore.LIGHTRED_EX + str(Message) + Fore.RESET)
 
-def ExceptionWithTraceback(e):
-    Name = type(e).__name__
+# def ExceptionWithTraceback(e):
+#     Name = type(e).__name__
 
-    print(f"\n{Style.BRIGHT}{Fore.WHITE}{Back.RED} {Name} {Back.RESET}{Fore.RED}: {str(e)}{Style.RESET_ALL}")
-    print(f"\n{Style.BRIGHT}{Fore.LIGHTCYAN_EX}Stack begin{Style.NORMAL}{Fore.LIGHTBLUE_EX}\n{traceback.format_exc()}{Fore.LIGHTCYAN_EX}{Style.BRIGHT}Stack end{Style.RESET_ALL}\n")
+#     print(f"\n{Style.BRIGHT}{Fore.WHITE}{Back.RED} {Name} {Back.RESET}{Fore.RED}: {str(e)}{Style.RESET_ALL}")
+#     print(f"\n{Style.BRIGHT}{Fore.LIGHTCYAN_EX}Stack begin{Style.NORMAL}{Fore.LIGHTBLUE_EX}\n{traceback.format_exc()}{Fore.LIGHTCYAN_EX}{Style.BRIGHT}Stack end{Style.RESET_ALL}\n")
             
 
 def ClearWindow():
@@ -116,12 +117,12 @@ def Pause():
 
 def Quit(Message: str | None = None):
     if Message:
-        CustomException(f"\n{Message}")
+        out.exception(f"\n{Message}")
         print("\n\nThe program will now exit.")
         Pause()
         sys.exit(0)
     else:
-        CustomException("\nQuitting...")
+        out.exception("\nQuitting...")
         sys.exit(0)
 
 def FirstSetup():
@@ -133,7 +134,7 @@ def FirstSetup():
         }
 
         ClearWindow()
-        Notice("Performing first time setup:\nControl+C to skip (Will result in read-only access)\n\n")
+        out.notice("Performing first time setup:\nControl+C to skip (Will result in read-only access)\n\n")
         
         while True:
             Username = input(GetInputPrefix("Setup", "Enter your username. This is used in the commit message."))
@@ -150,17 +151,19 @@ def FirstSetup():
         
         Success = Data_Set(Data)
         if not Success:
-            Warning("Failed to save data")
+            out.warn("Failed to save data")
             Pause()
 
         ClearWindow()
     except KeyboardInterrupt:
-        Warning("You will only have READ access, as a token has not been given.")
+        print()
+        out.warn("You will only have READ access, as a token has not been given.")
         Pause()
 
         pass
     except Exception as e:
-        ExceptionWithTraceback(e)
+        print()
+        out.traceback(e)
         Quit(f"Fatal error during setup!")
 
 
@@ -247,13 +250,15 @@ def main():
             if ExitCode == "update":
                 if UserInput.YesNo(f"Are you sure you want to install the latest version, {Fore.LIGHTGREEN_EX}{ThisVersion}{Fore.RESET}?"):
                     update.Update(Dir)
+            elif ExitCode == "quit_to_terminal":
+                Pause()
 
 
     except Exception as e:
         toggle_console(True)
 
-        CustomException(f"\nA fatal error ocurred during runtime! The program will now exit. See details below.")
-        ExceptionWithTraceback(e)
+        out.exception(f"\nA fatal error ocurred during runtime! The program will now exit. See details below.")
+        out.traceback(e)
         Pause()
     
 
@@ -271,8 +276,8 @@ if __name__ == "__main__":
             if e == "" or e == None:
                 e = "Unknown exception"
 
-            CustomException(f"\nA fatal error ocurred during runtime! The program will now exit. See details below.")
-            ExceptionWithTraceback(e)
+            out.exception(f"\nA fatal error ocurred during runtime! The program will now exit. See details below.")
+            out.traceback(e)
             Pause()
     else:
         ClearWindow()

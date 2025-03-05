@@ -4,6 +4,7 @@ from tkinter import messagebox
 from tkinter import font
 from datetime import datetime
 
+
 from . import update
 from ..libraries import output as out
 
@@ -120,11 +121,12 @@ def GetStatus() -> tuple[bool, dict | str]:
             
             return True, Data
     else:
-        out.warn(f"GET to {URL}")
+        out.warn(f"GET to {URL} failed: {Result.status_code} ({Result.reason})", "GetStatus")
         return False, f"GET failed: HTTP {Result.status_code} ({Result.reason})"
 
 def SetStatus(Data: dict) -> tuple[bool, str | None]:
     if not "Username" in UserData:
+        out.error("aborting commit: user not authenticated", "SetStatus")
         return False, "Authenticate with your username and email."
 
     HEADERS = {
@@ -137,7 +139,7 @@ def SetStatus(Data: dict) -> tuple[bool, str | None]:
     response = requests.get(f"{API}/Status.json", headers=HEADERS)
 
     if response.status_code != 200:
-        print(f"[SetStatus]: fetch failed: {response.reason}")
+        out.error(f"fetch failed: {response.status_code} ({response.reason})", "SetStatus")
         return False, f"Failed to fetch file SHA: HTTP {response.status_code} ({response.reason})"
     
     ResponseData = response.json()
@@ -154,20 +156,23 @@ def SetStatus(Data: dict) -> tuple[bool, str | None]:
     try:    
         Data: str = json.dumps(Data)
     except Exception as e:
-        print(f"[SetStatus]: dumps failed: {e}")
-        return False, "Could not dump JSON to string!"
+        out.error(f"Failed to convert data to JSON", "SetStatus")
+        out.traceback(e)
+
+        return False, "Could not convert to JSON!"
 
     ## Encode with base64, as github requires that format
     try:
         Data = base64.b64encode(Data.encode("utf-8")).decode()
     except Exception as e:
-        print(f"[SetStatus]: b64encode failed: {e}")
+        # print(f"[SetStatus]: b64encode failed: {e}")
+        out.error(f"Failed to encode JSON to base64", "SetStatus")
+        out.traceback(e)
 
         return False, "Could not encode to Base64!"
-    print(CurrentStatusData)
-    print(Data)
+    
     if CurrentStatusData.replace("\n", "") == Data:
-        
+        out.warn("Aborting SetStatus: no changes were made.", "SetStatus")
         return False, "No changes to commit."
     
     ## Prepare data
@@ -182,6 +187,7 @@ def SetStatus(Data: dict) -> tuple[bool, str | None]:
     }
 
     ## Commit
+    out.info("committing...", "SetStatus")
     return update.CustomRequest(f"{API}/Status.json", "PUT", BODY, HEADERS)
 
 def ClearFrame(ContentFrame):
@@ -234,6 +240,7 @@ def RefreshWindow(Override: bool = False) -> bool:
     global ContentFrame, CurrentRow, RefreshDebounce, CurrentData
 
     if RefreshDebounce > time.time() and not Override:
+        out.warn(f"Refresh rejected: debounce ({(RefreshDebounce - time.time()):.2f}s remaining)", "RefreshWindow")
         return messagebox.showwarning("Warning", "Please wait before sending another request.")
     else:
         RefreshDebounce = time.time() + 5
@@ -243,29 +250,37 @@ def RefreshWindow(Override: bool = False) -> bool:
     ClearFrame(ContentFrame)
     Root.update()
 
+    out.info("refreshing...", "RefreshWindow")
     GetSuccess, StatusData = GetStatus()
 
     if not GetSuccess:
+        out.error(f"refresh failed: {StatusData}", "RefreshWindow")
         messagebox.showerror("Error", f"Could not retrieve status information: {StatusData}")
 
         return
     else:
-        print(GetSuccess, StatusData)
+        out.success("refreshed", "RefreshWindow")
+        # print(GetSuccess, StatusData)
 
     CurrentData = CreateObjectsForDict(StatusData, ContentFrame)
 
 def OnSubmit():
     Target = TkObjectsToDict(CurrentData)
+
+    out.info("attempting commit...", "OnSubmit")
     Success, Result = SetStatus(Target)
     # RefreshWindow(True)
 
     if Success:
+        out.success("Commit successful.", "OnSubmit")
         return messagebox.showinfo(ProgramTitle, "Successfully updated centre status.")
     else:
+        out.error(f"Commit failed: {Result}", "OnSubmit")
         return messagebox.showerror(ProgramTitle, f"Failed to commit: {Result}")
 
 def InitData():
     if not os.path.exists(DataFile):
+        out.error(f"Cannot reset (data file does not exist)", "InitData")
         return messagebox.showerror(ProgramTitle, "error: Data file does not exist. Try reinstalling the app.")
 
     try:
@@ -274,13 +289,19 @@ def InitData():
         with open(DataFile, "w") as File:
             File.write("{}")
     except Exception as e:
+        out.error(f"Cannot reset (file system error)", "InitData")
+        out.traceback(e)
+
         return messagebox.showerror(ProgramTitle, f"error: Failed to write to file ({e})")
     else:
+        out.success("reset complete", "InitData")
         return messagebox.showinfo(ProgramTitle, "User data was reset.\nRestart the program to perform first-time setup again.")
 
 def ExitWithCommand(Root: Tk, Command: str):
     global ExitCommand
     ExitCommand = Command
+
+    out.info(f"exiting with status \"{Command}\"", "ExitWithCommand")
 
     Root.destroy()
 
@@ -308,6 +329,7 @@ def main(Data, DataFilePath):
     Menubar.add_cascade(menu=Menu_File, label="File")
     Menu_File.add_command(label="Repair/update installation", command=lambda: ExitWithCommand(Root, "update"))
     Menu_File.add_separator()
+    Menu_File.add_command(label="Exit and view log", command=lambda: ExitWithCommand(Root, "quit_to_terminal"))
     Menu_File.add_command(label="Exit", command=Root.destroy)
 
     Menubar.add_cascade(menu=Menu_Edit, label="Edit")
@@ -327,6 +349,12 @@ def main(Data, DataFilePath):
 
     RefreshWindow()
 
+    if not update.CheckToken(Token) and Token != None:
+        out.warn(f"The token provided to the program, {Token}, may be invalid.", "main")
+        messagebox.showwarning(ProgramTitle, f"The provided token,\n\n{Token}\n\nmay not be valid! Please check it and try again.\nSelect Edit > Initialise... to reset your token.")
+    elif Token == None:
+        out.warn("No token was provided: committing not possible.")
+
     # Buttons
     ButtonsFrame = ttk.Frame(Root, padding = 10)
     ButtonsFrame.grid(sticky="E")
@@ -344,4 +372,5 @@ def main(Data, DataFilePath):
 
 ## Runtime
 if __name__ == "__main__":
+    out.init(True)
     main()
