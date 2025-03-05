@@ -16,7 +16,8 @@ The program attempts to install all of the required dependencies, but should it 
 
 ## Getting the software running
 To start the software, you must:
-* ensure that you have an installation of Python 3.12.x (or higher).
+* ensure that you have an installation of Python 3.12.x (3.12.2 recommended) (or higher).
+  * Visit https://www.python.org/downloads/ for installation instructions.
 
 Once the above has been confirmed, launch the `Controller.py` file to start the software.
 
