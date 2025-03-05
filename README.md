@@ -5,7 +5,7 @@ Utility tool to manage access to the application center for Installation IX.
 
 #### Information Security Notice
 > This software is classified **Level 0** (For Official Use Only) - anyone may download, distribute or modify this software.
-> For more information, see the Licensimg section below.
+> For more information, see the Licensing section below.
 
 ## Dependencies
 Built for Windows 10/11. Not suitable for any other operating system.
