@@ -4,10 +4,10 @@ from tkinter import messagebox
 from tkinter import font
 from datetime import datetime
 
-
 from . import update
 from ..libraries import output as out
 
+import webbrowser as browser
 import os
 import requests
 import json
@@ -19,6 +19,8 @@ DefaultPadding = 10
 ProgramTitle = "Application Centre Controller"
 API = "https://api.github.com/repos/Greenloop36/ix-ApplicationCentre_Status/contents"
 DownloadFilePath = "https://raw.githubusercontent.com/Greenloop36/ix-ApplicationCentre_Status/main/"
+STATUS_REPO_URL = "https://github.com/Greenloop36/ix-ApplicationCentre_Status"
+CONTROLLER_REPO_URL = "https://github.com/Greenloop36/ix-Application-Centre-Controller"
 
 ## init
 Root = None
@@ -325,6 +327,8 @@ def main(Data, DataFilePath):
     Root["menu"] = Menubar
     Menu_File = Menu(Menubar)
     Menu_Edit = Menu(Menubar)
+    Menu_View = Menu(Menubar)
+    Menu_View_Repo = Menu(Menubar)
 
     Menubar.add_cascade(menu=Menu_File, label="File")
     Menu_File.add_command(label="Repair/update installation", command=lambda: ExitWithCommand(Root, "update"))
@@ -335,6 +339,10 @@ def main(Data, DataFilePath):
     Menubar.add_cascade(menu=Menu_Edit, label="Edit")
     Menu_Edit.add_command(label="Initialise user data", command=InitData)
 
+    Menubar.add_cascade(menu=Menu_View, label="View")
+    Menu_View.add_cascade(menu=Menu_View_Repo, label="Open Repositories...")
+    Menu_View_Repo.add_command(label="Status", command=lambda: browser.open_new_tab(STATUS_REPO_URL))
+    Menu_View_Repo.add_command(label="Controller", command=lambda: browser.open_new_tab(CONTROLLER_REPO_URL))
 
     # Header
     HeaderFont = font.Font(size = 16, weight = "bold")
