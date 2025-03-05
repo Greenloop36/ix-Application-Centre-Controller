@@ -47,7 +47,7 @@ To do this manually, go to `internal/persistent/Data.json`, and then clear the f
 
 ## Licensing
 This software is licensed under the Apache 2.0 license.
-For more information, view the `LICENSE` file, located in this directory, or (https://www.tldrlegal.com/license/apache-license-2-0-apache-2-0)[view a summary].
+For more information, view the `LICENSE` file, located in this directory, or https://www.tldrlegal.com/license/apache-license-2-0-apache-2-0.
 
 ### Requests
 This utility makes the use of the `requests` library, developed by Kenneth Reitz.
