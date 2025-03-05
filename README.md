@@ -14,6 +14,12 @@ The program attempts to install all of the required dependencies, but should it 
 * colorama;
 * requests.
 
+## Getting the software running
+To start the software, you must:
+* ensure that you have an installation of Python 3.12.x (or higher).
+
+Once the above has been confirmed, launch the `Controller.py` file to start the software.
+
 ## Setup
 When you first start this program, you will be prompted to enter a username, email and "commit token".
 **If you do not intend to change the centre's status, you may skip this part by pressing `Control+C`.**
