@@ -19,7 +19,8 @@ To start the software, you must:
 * ensure that you have an installation of Python 3.12.x (3.12.2 recommended) (or higher).
   * Visit https://www.python.org/downloads/ for installation instructions.
 
-Once the above has been confirmed, launch the `Controller.py` file to start the software.
+Once the above has been confirmed, extract the downloaded files to a memorable directory.
+Launch the `Controller.py` file to start the software.
 
 ## Setup
 When you first start this program, you will be prompted to enter a username, email and "commit token".
