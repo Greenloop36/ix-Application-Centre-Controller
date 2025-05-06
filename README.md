@@ -29,7 +29,7 @@ When you first start this program, you will be prompted to enter a username, ema
 Your username and email should match those used for IX.
 Contact `@gl36` for the Commit Access Token.
 
-#### Information
+> #### Information
 > If prompted to update, select either **Y** (for YES) or **N** (for NO).
 
 
