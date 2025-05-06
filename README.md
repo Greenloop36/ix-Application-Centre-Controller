@@ -3,7 +3,7 @@ developed by @gl36
 
 Utility tool to manage access to the application center for Installation IX.
 
-#### Information Security Notice
+> #### Information Security Notice
 > This software is classified **Level 0** (For Official Use Only) - anyone may download, distribute or modify this software.
 > For more information, see the Licensing section below.
 
